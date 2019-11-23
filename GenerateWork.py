@@ -147,11 +147,8 @@ def extract_layers(layers,img,model = None):
     return la.features
 def achieve():
     style_img = image_Loader('/home/ZhangXueLiang/LiMiao/dataset/NeuralStyleTransfer/images/style.JPG')
-    img1 = Image.open('/home/ZhangXueLiang/LiMiao/dataset/NeuralStyleTransfer/images/style.JPG').resize((600,600))
-    plt.savefig('img1.jpg')
     content_img = image_Loader('/home/ZhangXueLiang/LiMiao/dataset/NeuralStyleTransfer/images/conten.jpg')
-    img2 = Image.open('/home/ZhangXueLiang/LiMiao/dataset/NeuralStyleTransfer/images/conten.jpg').resize((600,600))
-    plt.savefig('img2.jpg')
+
     vgg = createModel()
     style_img = style_img.cuda()
     content_img = content_img.cuda()
