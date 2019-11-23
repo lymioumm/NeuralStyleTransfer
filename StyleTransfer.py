@@ -94,34 +94,46 @@ def image_Loader(image_name):
 
 
 def createModel():
+    
+    # creating a pretrained VGG model
     vgg = vgg19(pretrained = True).features
 
     # Freezing the layers as we will not use it for training
+    s = vgg.parameters()
     for param in vgg.parameters():
         param.requires_grad = False
 
+    t = vgg
+    print(t)
     return vgg
 
 
 #  calculate the gram matrix
 class GramMatrix(nn.Module):
-    def forward(self,input):
+    def forward(self,input):   # input.shape = torch.Size([1, 64, 512, 643])
 
         #  extracting the different dimensions from the input image
-        b,c,h,w = input.size()
+        b,c,h,w = input.size()       # b = 1,c = 64,h = 512,w = 643
 
         #  flatten all the values along the height and width dimension
-        features = input.view(b,c,h*w)
+        features = input.view(b,c,h*w)     # features.shape = torch.Size([1, 64, 329216])
 
         # Calculate the gram matrix  by multiplying the flattening values along with its transposed vector
-        gram_matrix = torch.bmm(features,features.transpose(1,2))
-        gram_matrix.div_(h*w)
+
+        t = features.transpose(1,2)    # 对矩阵进行转置，features.shape = torch.Size([1, 64, 329216])，转置后 t.shape = torch.Size([1,329216 , 64])
+        print(t)
+
+        # The gram matrix is calculated by multiplying the flattening values along with its transposed vector ，by using the PyTorch batch matrix multiplication function
+        gram_matrix = torch.bmm(features,features.transpose(1,2))    # gram_matrix.shape = torch.Size([1, 64, 64])  # 进行矩阵相乘运算：C[m,m] = A[m,n]×B[n,m]，不是点乘
+        t2 = gram_matrix.div_(h*w)
+        b2, c2, h2 = t2.size()
         return gram_matrix
 
 #      calculate style loss
 class StyleLoss(nn.Module):
     def forward(self,inputs,targets):
         out = nn.MSELoss()(GramMatrix()(inputs),targets)
+        print(out)
         return (out)
 
 class LayerActivations():
@@ -157,7 +169,7 @@ def achieve():
 
     style_layers = [2,6,11,20,25]
     content_layers = [28]
-    loss_layers = style_layers + content_layers
+    loss_layers = style_layers + content_layers      #[2,6,11,20,25,28]
 
     content_targets = extract_layers(content_layers,content_img,model=vgg)
     content_targets = [t.detach() for t in content_targets]
@@ -166,13 +178,14 @@ def achieve():
     targets = style_targets + content_targets
 
     # Creating loss function for each layers
-    loss_fns = [StyleLoss()] * len(style_layers) + [nn.MSELoss()] * len(content_layers)
+    S = [StyleLoss()]
+    loss_fns = [StyleLoss()] * len(style_layers) + [nn.MSELoss()] * len(content_layers)    # loss_fns = <class 'list'>: [StyleLoss(), StyleLoss(), StyleLoss(), StyleLoss(), StyleLoss(), MSELoss()]
     loss_fns = [fn.cuda() for fn in loss_fns]
 
 
     style_weights = [1e3/n**2 for n in [64,128,256,512,512]]
     content_weights = [1e0]
-    weights = style_weights + content_weights
+    weights = style_weights + content_weights      # weights = <class 'list'>: [0.244140625, 0.06103515625, 0.0152587890625, 0.003814697265625, 0.003814697265625, 1.0]
 
 
 
