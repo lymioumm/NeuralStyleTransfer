@@ -104,7 +104,7 @@ def createModel():
         param.requires_grad = False
 
     t = vgg
-    print(t)
+    # print(t)
     return vgg
 
 
@@ -121,7 +121,7 @@ class GramMatrix(nn.Module):
         # Calculate the gram matrix  by multiplying the flattening values along with its transposed vector
 
         t = features.transpose(1,2)    # 对矩阵进行转置，features.shape = torch.Size([1, 64, 329216])，转置后 t.shape = torch.Size([1,329216 , 64])
-        print(t)
+        # print(t)
 
         # The gram matrix is calculated by multiplying the flattening values along with its transposed vector ，by using the PyTorch batch matrix multiplication function
         gram_matrix = torch.bmm(features,features.transpose(1,2))    # gram_matrix.shape = torch.Size([1, 64, 64])  # 进行矩阵相乘运算：C[m,m] = A[m,n]×B[n,m]，不是点乘
@@ -133,7 +133,7 @@ class GramMatrix(nn.Module):
 class StyleLoss(nn.Module):
     def forward(self,inputs,targets):
         out = nn.MSELoss()(GramMatrix()(inputs),targets)
-        print(out)
+        # print(out)
         return (out)
 
 class LayerActivations():
